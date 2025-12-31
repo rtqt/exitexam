@@ -1,0 +1,171 @@
+
+// Split text into chunks to respect token limits
+const chunkText = (text, maxLength = 12000) => {
+    const chunks = [];
+    let currentChunk = "";
+    const lines = text.split('\n');
+
+    for (const line of lines) {
+        if ((currentChunk + line).length > maxLength) {
+            chunks.push(currentChunk);
+            currentChunk = "";
+        }
+        currentChunk += line + "\n";
+    }
+    if (currentChunk.trim()) {
+        chunks.push(currentChunk);
+    }
+    return chunks;
+};
+
+export const extractQuestionsFromText = async (apiKey, text) => {
+    if (!apiKey || !text) throw new Error("API Key and content are required.");
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-preview:generateContent?key=${apiKey.trim()}`;
+    let allQuestions = [];
+
+    // Chunk the text
+    const chunks = chunkText(text, 12000);
+
+    const createPrompt = (chunkText) => `
+      You are an expert exam creator. Extract multiple-choice questions from the following text.
+      
+      CRITICAL:
+      - Extract ALL questions in this text section.
+      - Return result strictly as a raw JSON array. No markdown.
+      
+      Format:
+      [
+        {
+          "theme": "Subject",
+          "question": "Question text",
+          "options": ["A", "B", "C", "D"],
+          "answer": 0 // index 0-3
+        }
+      ]
+      
+      Text:
+      ${chunkText}
+    `;
+
+    try {
+        for (const chunk of chunks) {
+            const prompt = createPrompt(chunk);
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                console.error("Gemini Chunk Error:", err);
+                throw new Error(err.error?.message || "Gemini API Error");
+            }
+
+            const data = await response.json();
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!content) continue;
+
+            try {
+                // Remove markdown code blocks if present
+                const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleanContent);
+
+                let chunkQuestions = [];
+                if (Array.isArray(parsed)) {
+                    chunkQuestions = parsed;
+                } else if (parsed.questions && Array.isArray(parsed.questions)) {
+                    chunkQuestions = parsed.questions;
+                }
+
+                if (chunkQuestions.length > 0) {
+                    allQuestions = [...allQuestions, ...chunkQuestions];
+                }
+            } catch (parseErr) {
+                console.warn("JSON Parse Error on Gemini chunk:", parseErr);
+            }
+        }
+
+        if (allQuestions.length === 0) {
+            throw new Error("No questions extracted. Check text format or API availability.");
+        }
+
+        return allQuestions;
+
+    } catch (error) {
+        console.error("Gemini Extraction Error", error);
+        throw error;
+    }
+};
+
+export const explainQuestionGemini = async (apiKey, question, options, correctAnswerIndex, model = "gemini-1.5-flash") => {
+    if (!apiKey) throw new Error("API Key is required");
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
+
+    const prompt = `
+    You are a helpful computer science tutor.
+    Question: ${question}
+    Options:
+    ${options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n')}
+    
+    Correct Answer: ${String.fromCharCode(65 + correctAnswerIndex)} (${options[correctAnswerIndex]})
+    
+    Explain clearly why this answer is correct and briefly why the others are incorrect.
+    Target audience: Exit exam students.
+    Keep the explanation concise but informative.
+    `;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error?.message || "Gemini API Error");
+        }
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!text) {
+            throw new Error("No explanation generated by Gemini.");
+        }
+
+        return text;
+    } catch (error) {
+        console.error("Gemini Explanation Error", error);
+        throw error;
+    }
+};
+
+export const getGeminiModels = async (apiKey) => {
+    if (!apiKey) throw new Error("API Key is required");
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch models");
+    const data = await response.json();
+    return data.models || [];
+};
