@@ -18,10 +18,10 @@ const chunkText = (text, maxLength = 12000) => {
     return chunks;
 };
 
-export const extractQuestionsFromText = async (apiKey, text) => {
+export const extractQuestionsFromText = async (apiKey, text, model = "gemini-2.5-flash") => {
     if (!apiKey || !text) throw new Error("API Key and content are required.");
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-preview:generateContent?key=${apiKey.trim()}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
     let allQuestions = [];
 
     // Chunk the text
@@ -109,7 +109,7 @@ export const extractQuestionsFromText = async (apiKey, text) => {
     }
 };
 
-export const explainQuestionGemini = async (apiKey, question, options, correctAnswerIndex, model = "gemini-1.5-flash") => {
+export const explainQuestionGemini = async (apiKey, question, options, correctAnswerIndex, model = "gemini-2.5-flash") => {
     if (!apiKey) throw new Error("API Key is required");
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
