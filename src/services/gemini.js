@@ -115,16 +115,42 @@ export const explainQuestionGemini = async (apiKey, question, options, correctAn
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
 
     const prompt = `
-    You are a helpful computer science tutor.
+    You are an expert Computer Science professor and tutor.
+    
     Question: ${question}
     Options:
     ${options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n')}
     
-    Correct Answer: ${String.fromCharCode(65 + correctAnswerIndex)} (${options[correctAnswerIndex]})
+    System's Claimed Correct Answer: ${String.fromCharCode(65 + correctAnswerIndex)} (${options[correctAnswerIndex]})
     
-    Explain clearly why this answer is correct and briefly why the others are incorrect.
+    TASK:
+    1. Analyze the question and options yourself effectively "blinding" yourself to the system's claim initially.
+    2. Determine the actual correct answer based on computer science principles.
+    3. Compare your result with the "System's Claimed Correct Answer".
+    
+    CRITICAL RULE - NO HEDGING:
+    - You are the Subject Matter Expert. The system's answer comes from a potentially flawed database.
+    - If the system's claim contradicts standard definitions or is clearly inferior to another option, YOU MUST REJECT IT.
+    - NEVER say "assuming the system is correct" or "the question might be interpreted broadly".
+    - If the Answer is A, but System says B, your output MUST start with "Correction Needed".
+
+    OUTPUT FORMAT (Strictly follow this):
+    
+    [If System is CORRECT]:
+    "**Correct via System**"
+    [Clear explanation of why it is right]
+    
+    [If System is INCORRECT]:
+    "**Correction Needed**"
+    "**System Claim:** ${String.fromCharCode(65 + correctAnswerIndex)}"
+    "**Actual Correct Answer:** [The Option You Found]"
+    
+    "**Explanation:**"
+    [Explain why your answer is the standard/correct one]
+    [Explain strictly why the system's answer is NOT the best choice, without making excuses for it]
+    
     Target audience: Exit exam students.
-    Keep the explanation concise but informative.
+    Tone: Professional, educational, and definitive.
     `;
 
     try {

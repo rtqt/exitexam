@@ -126,17 +126,36 @@ export const explainQuestionGroq = async (apiKey, question, options, correctAnsw
     Options:
     ${options.map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n')}
     
+    System's Claimed Correct Answer: ${String.fromCharCode(65 + correctAnswerIndex)} (${options[correctAnswerIndex]})
+    
     Task:
-    1. FIRST, analyze the question and options carefully.
-    2. THINK step-by-step to derive the correct answer.
-    3. STATE the correct answer clearly.
-    4. Provide a detailed explanation of why that answer is correct.
-    5. Briefly explain why each of the other options is incorrect.
+    1. FIRST, analyze the question and options independent of the system's claim.
+    2. DERIVE the correct answer using expert computer science knowledge.
+    3. COMPARE your derived answer with the system's claim.
     
-    CRITICAL: You must be accurate. If the provided 'correct answer' (if any) seems wrong, explain why you think so, but prioritize logical correctness.
+    CRITICAL RULE - NO HEDGING:
+    - You are the Subject Matter Expert. The system's answer comes from a potentially flawed database.
+    - If the system's claim contradicts standard definitions or is clearly inferior to another option, YOU MUST REJECT IT.
+    - NEVER say "assuming the system is correct" or "if interpreted broadly".
+    - If the Answer is A, but System says B, your output MUST start with "Correction Needed".
+
+    OUTPUT FORMAT (Strictly follow this):
     
-    Target audience: Computer Science students preparing for a comprehensive Exit Exam.
-    Tone: Professional, educational, and encouraging.
+    [If System is CORRECT]:
+    "**Correct via System**"
+    [Clear explanation of why it is right]
+    
+    [If System is INCORRECT]:
+    "**Correction Needed**"
+    "**System Claim:** ${String.fromCharCode(65 + correctAnswerIndex)}"
+    "**Actual Correct Answer:** [The Option You Found]"
+    
+    "**Explanation:**"
+    [Explain why your answer is the standard/correct one]
+    [Explain strictly why the system's answer is NOT the best choice, without making excuses for it]
+    
+    Target audience: Computer Science students.
+    Tone: Professional, educational, and definitive.
     `;
 
     try {
