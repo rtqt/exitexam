@@ -575,10 +575,20 @@ function ExamApp() {
                 </div>
               </div>
 
-              <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">
-                {aiProvider === 'groq'
-                  ? "Enter your Groq API Key (starts with gsk_)."
-                  : "Enter your Google Gemini API Key."}
+              <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm flex justify-between items-center">
+                <span>
+                  {aiProvider === 'groq'
+                    ? "Enter your Groq API Key (starts with gsk_)."
+                    : "Enter your Google Gemini API Key."}
+                </span>
+                <a
+                  href={aiProvider === 'groq' ? "https://console.groq.com/keys" : "https://aistudio.google.com/app/apikey"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                >
+                  Get Your Key Here &rarr;
+                </a>
               </p>
 
               <input
