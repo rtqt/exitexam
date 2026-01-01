@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuestions } from '../context/QuestionContext';
-import { Trash2, Plus, Brain, Save, X, Check, Loader2, FileText, Edit, Search } from 'lucide-react';
+import { Trash2, Plus, Brain, Save, X, Check, Loader2, FileText, Edit, Search, ImageIcon } from 'lucide-react';
 import { extractQuestionsFromText } from '../services/gemini';
 import { extractTextFromPDF } from '../services/pdf';
 import { parseQuestionsRegex } from '../services/regexParser';
@@ -20,6 +20,7 @@ export default function AdminDashboard({ onExit }) {
     const [newQ, setNewQ] = useState({
         theme: '',
         question: '',
+        image: '',
         options: ['', '', '', ''],
         answer: 0
     });
@@ -47,13 +48,14 @@ export default function AdminDashboard({ onExit }) {
             alert('Question added!');
         }
 
-        setNewQ({ theme: newQ.theme, question: '', options: ['', '', '', ''], answer: 0 });
+        setNewQ({ theme: newQ.theme, question: '', image: '', options: ['', '', '', ''], answer: 0 });
     };
 
     const handleEditStart = (q) => {
         setNewQ({
             theme: q.theme,
             question: q.question,
+            image: q.image || '',
             options: [...q.options],
             answer: q.answer
         });
@@ -63,7 +65,7 @@ export default function AdminDashboard({ onExit }) {
 
     const cancelEdit = () => {
         setEditingId(null);
-        setNewQ({ theme: '', question: '', options: ['', '', '', ''], answer: 0 });
+        setNewQ({ theme: '', question: '', image: '', options: ['', '', '', ''], answer: 0 });
     };
 
     // PDF Handler
@@ -212,6 +214,15 @@ export default function AdminDashboard({ onExit }) {
                                             value={newQ.question}
                                             onChange={e => setNewQ({ ...newQ, question: e.target.value })}
                                             placeholder="Type the question here..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Image URL (Optional)</label>
+                                        <input
+                                            className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            value={newQ.image || ''}
+                                            onChange={e => setNewQ({ ...newQ, image: e.target.value })}
+                                            placeholder="https://example.com/image.png"
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -460,7 +471,10 @@ export default function AdminDashboard({ onExit }) {
                                                         {q.theme}
                                                     </span>
                                                 </div>
-                                                <p className="text-slate-800 dark:text-slate-200 font-medium text-sm line-clamp-2">{q.question}</p>
+                                                <p className="text-slate-800 dark:text-slate-200 font-medium text-sm line-clamp-2">
+                                                    {q.image && <ImageIcon className="w-4 h-4 inline mr-1 text-purple-500" />}
+                                                    {q.question}
+                                                </p>
                                             </div>
                                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                                 <button

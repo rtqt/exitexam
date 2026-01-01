@@ -32,7 +32,7 @@ function ExamApp() {
   const [userAnswers, setUserAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(180 * 60); // 3 hours in seconds
   const [isExamMode, setIsExamMode] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState('All');
+  const [selectedThemes, setSelectedThemes] = useState([]);
 
   // Dark Mode State
   const [darkMode, setDarkMode] = useState(() => {
@@ -55,11 +55,11 @@ function ExamApp() {
   const [availableModels, setAvailableModels] = useState([]);
   const [checkingModels, setCheckingModels] = useState(false);
 
-  // Filtered questions based on theme
+  // Filtered questions based on themes
   const filteredQuestions = useMemo(() => {
-    if (selectedTheme === 'All') return questions;
-    return questions.filter(q => q.theme === selectedTheme);
-  }, [selectedTheme, questions]);
+    if (selectedThemes.length === 0 || selectedThemes.includes('All')) return questions;
+    return questions.filter(q => selectedThemes.includes(q.theme));
+  }, [selectedThemes, questions]);
 
   const themes = ['All', ...new Set(questions.map(q => q.theme))];
 
@@ -117,6 +117,18 @@ function ExamApp() {
   const passed = percentage >= 50;
 
 
+  const toggleTheme = (theme) => {
+    if (theme === 'All') {
+      setSelectedThemes([]);
+      return;
+    }
+    setSelectedThemes(prev => {
+      if (prev.includes(theme)) {
+        return prev.filter(t => t !== theme);
+      }
+      return [...prev, theme];
+    });
+  };
 
 
   const handleExplain = async (question, options, answerIdx) => {
@@ -261,21 +273,24 @@ function ExamApp() {
                 <Target className="w-5 h-5 text-blue-500" />
                 Focus Your Study
               </h3>
-              <span className="text-sm text-slate-500 dark:text-slate-400">Select a topic to filter questions</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">Select one or more topics to filter questions</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {themes.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setSelectedTheme(t)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedTheme === t
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                    }`}
-                >
-                  {t}
-                </button>
-              ))}
+              {themes.map(t => {
+                const isSelected = t === 'All' ? selectedThemes.length === 0 : selectedThemes.includes(t);
+                return (
+                  <button
+                    key={t}
+                    onClick={() => toggleTheme(t)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${isSelected
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </main>
@@ -332,6 +347,20 @@ function ExamApp() {
                   <h2 className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white leading-relaxed mb-8">
                     {filteredQuestions[currentIdx].question}
                   </h2>
+
+                  {filteredQuestions[currentIdx].image && (
+                    <div className="mb-8 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                      <img
+                        src={filteredQuestions[currentIdx].image}
+                        alt="Question Reference"
+                        className="w-full max-h-96 object-contain bg-slate-50 dark:bg-slate-900"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
 
                   <div className="grid gap-3">
                     {filteredQuestions[currentIdx].options.map((option, i) => {
