@@ -119,12 +119,12 @@ export default function AdminDashboard({ onExit }) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6 transition-colors duration-300">
+        <div className="min-h-screen bg-white dark:bg-slate-900 p-6 transition-colors duration-300">
             <div className="max-w-6xl mx-auto">
-                <div className="flex justify-between items-center mb-8 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between items-center mb-8 bg-slate-50 dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Admin Dashboard</h1>
-                        <p className="text-slate-500 dark:text-slate-400">Manage exam questions and content</p>
+                        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Admin Dashboard</h1>
+                        <p className="text-gray-500 dark:text-slate-400">Manage exam questions and content</p>
                     </div>
                     <div className="flex gap-4">
                         <button onClick={() => { if (window.confirm('Reset all questions to default?')) resetToDefault() }} className="text-red-500 hover:text-red-400 underline text-sm">Reset DB</button>
@@ -142,30 +142,30 @@ export default function AdminDashboard({ onExit }) {
                     <div className="md:col-span-1 space-y-2">
                         <button
                             onClick={() => setActiveTab('add')}
-                            className={`w-full text-left px-4 py-3 rounded-xl font-medium flex items-center gap-3 transition-all ${activeTab === 'add' ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                            className={`w-full text-left px-4 py-3 rounded-xl font-medium flex items-center gap-3 transition-all ${activeTab === 'add' ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                                 }`}
                         >
                             <Plus className="w-5 h-5" /> Manual Add
                         </button>
                         <button
                             onClick={() => setActiveTab('import')}
-                            className={`w-full text-left px-4 py-3 rounded-xl font-medium flex items-center gap-3 transition-all ${activeTab === 'import' ? 'bg-purple-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                            className={`w-full text-left px-4 py-3 rounded-xl font-medium flex items-center gap-3 transition-all ${activeTab === 'import' ? 'bg-purple-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                                 }`}
                         >
                             <Brain className="w-5 h-5" /> AI Import
                         </button>
                         <button
                             onClick={() => setActiveTab('list')}
-                            className={`w-full text-left px-4 py-3 rounded-xl font-medium flex items-center gap-3 transition-all ${activeTab === 'list' ? 'bg-slate-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                            className={`w-full text-left px-4 py-3 rounded-xl font-medium flex items-center gap-3 transition-all ${activeTab === 'list' ? 'bg-slate-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                                 }`}
                         >
                             <Save className="w-5 h-5" /> Manage Questions
                         </button>
 
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl mt-6 border border-slate-200 dark:border-slate-700">
-                            <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-2">Stats</h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Total Questions: <span className="font-bold text-slate-800 dark:text-white">{questions.length}</span></p>
-                            <div className="mt-2 text-xs text-slate-400 space-y-1">
+                        <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl mt-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <h3 className="font-bold text-gray-700 dark:text-slate-200 mb-2">Stats</h3>
+                            <p className="text-sm text-gray-500 dark:text-slate-400">Total Questions: <span className="font-bold text-gray-800 dark:text-white">{questions.length}</span></p>
+                            <div className="mt-2 text-xs text-gray-400 space-y-1">
                                 {[...new Set(questions.map(q => q.theme))].slice(0, 5).map(t => (
                                     <div key={t} className="flex justify-between">
                                         <span>{t}</span>
@@ -182,7 +182,7 @@ export default function AdminDashboard({ onExit }) {
 
                         {/* MANUAL ADD / EDIT */}
                         {activeTab === 'add' && (
-                            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                                         {editingId ? 'Edit Question' : 'Add New Question'}
@@ -261,7 +261,7 @@ export default function AdminDashboard({ onExit }) {
 
                         {/* GEMINI IMPORT */}
                         {activeTab === 'import' && (
-                            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-slate-700">
                                 <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                                     <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                                     AI Question Extraction
@@ -440,10 +440,10 @@ export default function AdminDashboard({ onExit }) {
 
                         {/* LIST MANAGER */}
                         {activeTab === 'list' && (
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-between items-center">
-                                    <h2 className="font-bold text-slate-700 dark:text-slate-200">All Questions</h2>
-                                    <span className="text-xs text-slate-400">Total: {questions.length}</span>
+                            <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 flex justify-between items-center">
+                                    <h2 className="font-bold text-gray-700 dark:text-slate-200">All Questions</h2>
+                                    <span className="text-xs text-gray-400">Total: {questions.length}</span>
                                 </div>
 
                                 <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-10">
@@ -464,7 +464,7 @@ export default function AdminDashboard({ onExit }) {
                                         q.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                         q.theme.toLowerCase().includes(searchTerm.toLowerCase())
                                     ).slice().reverse().map((q) => (
-                                        <div key={q.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex justify-between gap-4 group">
+                                        <div key={q.id} className="p-4 hover:bg-white dark:hover:bg-slate-700/50 transition-colors flex justify-between gap-4 group">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
