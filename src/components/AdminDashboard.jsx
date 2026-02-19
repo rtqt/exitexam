@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useQuestions } from '../context/QuestionContext';
 import { Trash2, Plus, Brain, Save, X, Check, Loader2, FileText, Edit, Search, ImageIcon } from 'lucide-react';
-import { extractQuestionsFromText } from '../services/gemini';
-import { extractTextFromPDF } from '../services/pdf';
+import { extractQuestionsFromText, extractQuestionsFromMultimodal } from '../services/gemini';
+import { extractTextFromPDF, extractImagesFromPDF } from '../services/pdf';
 import { parseQuestionsRegex } from '../services/regexParser';
 
 import { extractQuestionsGroq } from '../services/groq';
@@ -28,6 +28,7 @@ export default function AdminDashboard({ onExit }) {
     // Import State
     const [apiKey, setApiKey] = useState('');
     const [importText, setImportText] = useState('');
+    const [pdfImages, setPdfImages] = useState([]); // Store converted PDF pages as images
     const [isImporting, setIsImporting] = useState(false);
     const [isParsingPDF, setIsParsingPDF] = useState(false);
     const [importError, setImportError] = useState('');
@@ -80,9 +81,17 @@ export default function AdminDashboard({ onExit }) {
 
         setIsParsingPDF(true);
         setImportError('');
+        setPdfImages([]); // Reset images
+
         try {
+            // Extract text for reference/fallback
             const text = await extractTextFromPDF(file);
-            setImportText(text); // Populate the text area
+            setImportText(text);
+
+            // Extract images for multimodal AI
+            const images = await extractImagesFromPDF(file);
+            setPdfImages(images);
+
         } catch (err) {
             setImportError(err.message);
         } finally {
@@ -92,7 +101,25 @@ export default function AdminDashboard({ onExit }) {
 
     // AI Extract Handler
     const handleGeminiExtract = async () => {
-        if (!apiKey || !importText) return;
+        if (!apiKey) return;
+
+        // If we have images, use multimodal execution (ONLY for Gemini)
+        if (pdfImages.length > 0 && provider === 'gemini') {
+            setIsImporting(true);
+            setImportError('');
+            try {
+                const extracted = await extractQuestionsFromMultimodal(apiKey, pdfImages);
+                setPreviewQuestions(extracted);
+            } catch (err) {
+                setImportError(err.message);
+            } finally {
+                setIsImporting(false);
+            }
+            return;
+        }
+
+        // Fallback to text-based extraction
+        if (!importText) return;
         setIsImporting(true);
         setImportError('');
         try {
@@ -412,6 +439,12 @@ export default function AdminDashboard({ onExit }) {
                                                         <span className="text-xs font-mono text-slate-400">Preview</span>
                                                     </div>
                                                     <p className="font-medium text-slate-800 dark:text-slate-200 mb-2">{q.question}</p>
+                                                    {q.imageDescription && (
+                                                        <p className="text-xs italic text-purple-600 dark:text-purple-400 mb-2 bg-purple-50 dark:bg-purple-900/10 p-2 rounded">
+                                                            <span className="font-bold">Diagram:</span> {q.imageDescription}
+                                                        </p>
+                                                    )}
+
                                                     <ul className="grid grid-cols-2 gap-2 text-sm text-slate-600 dark:text-slate-400">
                                                         {q.options.map((opt, idx) => (
                                                             <li

@@ -2,31 +2,108 @@
 @config "../tailwind.config.js";
 
 @layer base {
+    :root {
+        /* Light mode: warm cream/ivory */
+        --background: 38 60% 97%;
+        --foreground: 24 40% 12%;
+
+        --card: 36 80% 99%;
+        --card-foreground: 24 40% 12%;
+
+        --popover: 36 80% 99%;
+        --popover-foreground: 24 40% 12%;
+
+        /* Golden amber primary */
+        --primary: 38 95% 48%;
+        --primary-foreground: 24 40% 10%;
+
+        --secondary: 32 40% 93%;
+        --secondary-foreground: 24 40% 15%;
+
+        --muted: 36 30% 93%;
+        --muted-foreground: 28 20% 46%;
+
+        --accent: 32 65% 90%;
+        --accent-foreground: 24 40% 15%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 36 80% 98%;
+
+        --border: 32 30% 87%;
+        --input: 32 30% 87%;
+        --ring: 38 95% 48%;
+
+        --radius: 0.75rem;
+    }
+
+    .dark {
+        /* Dark mode: deep espresso/mahogany */
+        --background: 22 30% 8%;
+        --foreground: 38 60% 90%;
+
+        --card: 22 28% 10%;
+        --card-foreground: 38 60% 90%;
+
+        --popover: 22 28% 10%;
+        --popover-foreground: 38 60% 90%;
+
+        /* Warm gold primary in dark */
+        --primary: 40 90% 55%;
+        --primary-foreground: 22 30% 8%;
+
+        --secondary: 24 25% 16%;
+        --secondary-foreground: 38 60% 88%;
+
+        --muted: 24 22% 16%;
+        --muted-foreground: 32 20% 60%;
+
+        --accent: 24 25% 20%;
+        --accent-foreground: 38 60% 88%;
+
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 38 60% 90%;
+
+        --border: 24 22% 18%;
+        --input: 24 22% 18%;
+        --ring: 40 85% 55%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
     body {
-        @apply transition-colors duration-300;
-    }
-
-    /* Apply smooth transition to all elements that might change color */
-    *,
-    *::before,
-    *::after {
-        @apply transition-colors duration-300 ease-in-out;
+        @apply bg-background text-foreground;
+        background-feature-settings: "rlig" 1, "calt" 1;
     }
 }
 
-/* Custom Scrollbar for Sidebar */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+/* Glassmorphism Utilities */
+.glass {
+    @apply bg-amber-50/70 backdrop-blur-lg border border-amber-100/40 shadow-xl;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.glass-dark {
+    @apply dark:bg-stone-900/70 dark:backdrop-blur-lg dark:border-amber-900/20 dark:shadow-xl;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
     @apply bg-transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-200 dark:bg-slate-700 rounded-full;
+::-webkit-scrollbar-thumb {
+    @apply bg-amber-200 dark:bg-stone-700 rounded-full hover:bg-amber-300 dark:hover:bg-stone-600 transition-colors;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300 dark:bg-slate-600;
+/* Base selection color */
+::selection {
+    @apply bg-amber-400/30 text-amber-950;
 }

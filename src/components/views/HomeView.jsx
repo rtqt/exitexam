@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ListChecks, ArrowRight, Clock, Target } from 'lucide-react';
+import { Sparkles, ListChecks, ArrowRight, Clock, Target, BookOpen, Trophy, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function HomeView({ onStart, themes, selectedThemes, toggleTheme, questions }) {
@@ -8,56 +8,57 @@ export default function HomeView({ onStart, themes, selectedThemes, toggleTheme,
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
     },
     exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
   };
 
   return (
     <motion.main
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
       exit="exit"
     >
       {/* Hero Section */}
-      <motion.div variants={itemVariants} className="text-center mb-16 space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-4">
-          <Sparkles className="w-4 h-4" />
-          <span>Model Exit Exam IV Now Available</span>
+      <motion.div variants={itemVariants} className="text-center mb-20 space-y-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-sm font-semibold mb-4 border border-amber-200 dark:border-amber-800 backdrop-blur-sm">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Exit Exam Preparation Platform</span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight mb-6">
-          Master Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Exit Exam</span>
+        <h1 className="text-5xl md:text-7xl font-sans font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 drop-shadow-sm">
+          Master Your <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-700 dark:from-amber-300 dark:via-yellow-400 dark:to-amber-500">Informatics Exam</span>
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Comprehensive preparation with real-time feedback, AI-powered explanations, and simulated exam environments for Informatics students.
+        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          Elevate your readiness with AI-powered tutoring, real-time feedback, and comprehensive exam simulations tailored for succcess.
         </p>
       </motion.div>
 
       {/* Feature Cards */}
-      <motion.div variants={itemVariants} className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
+      <motion.div variants={itemVariants} className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-20">
         <button
           onClick={() => onStart('practice')}
-          className="group relative overflow-hidden bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all duration-300 text-left shadow-sm"
+          className="group relative overflow-hidden bg-white/60 dark:bg-stone-900/60 p-8 rounded-3xl border border-white/40 dark:border-stone-700/50 hover:shadow-2xl hover:border-amber-500/30 dark:hover:border-amber-400/30 transition-all duration-300 text-left shadow-lg backdrop-blur-md"
         >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <ListChecks className="w-32 h-32 transform rotate-12 text-blue-600 dark:text-blue-400" />
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <ListChecks className="w-48 h-48 transform translate-x-10 -translate-y-10 rotate-12 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="relative z-10">
-            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <ListChecks className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+              <Zap className="w-8 h-8 text-amber-600 dark:text-amber-400 fill-current" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Practice Mode</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Learn at your own pace with instant correct/incorrect feedback and detailed AI explanations.
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-amber-50 mb-3">Practice Mode</h3>
+            <p className="text-stone-600 dark:text-stone-400 mb-8 text-lg leading-relaxed">
+              Learn efficiently with instant AI explanations, correct/incorrect feedback, and unlimited time to understand every concept.
             </p>
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-2 transition-transform">
+            <div className="inline-flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-lg group-hover:gap-4 transition-all">
               Start Practice <ArrowRight className="w-5 h-5" />
             </div>
           </div>
@@ -65,54 +66,50 @@ export default function HomeView({ onStart, themes, selectedThemes, toggleTheme,
 
         <button
           onClick={() => onStart('exam')}
-          className="group relative overflow-hidden bg-slate-50 dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 hover:shadow-xl hover:border-red-500/50 dark:hover:border-red-400/50 transition-all duration-300 text-left shadow-sm"
+          className="group relative overflow-hidden bg-white/60 dark:bg-slate-900/60 p-8 rounded-3xl border border-white/40 dark:border-slate-700/50 hover:shadow-2xl hover:border-red-500/30 dark:hover:border-red-400/30 transition-all duration-300 text-left shadow-lg backdrop-blur-md"
         >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Clock className="w-32 h-32 transform -rotate-12 text-red-600 dark:text-red-400" />
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Clock className="w-48 h-48 transform translate-x-10 -translate-y-10 -rotate-12 text-red-600 dark:text-red-400" />
           </div>
           <div className="relative z-10">
-            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <Clock className="w-8 h-8 text-red-600 dark:text-red-400" />
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+              <Trophy className="w-8 h-8 text-red-600 dark:text-red-400 fill-current" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Exam Mode</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Simulate the real exam experience with a 3-hour timer, no immediate answers, and final grading.
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Exam Mode</h3>
+            <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg leading-relaxed">
+              Simulate the pressure of the real exam with a strict 3-hour timer, no hints, and a comprehensive performance review at the end.
             </p>
-            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold group-hover:translate-x-2 transition-transform">
-              Start Exam <ArrowRight className="w-5 h-5" />
+            <div className="inline-flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-lg group-hover:gap-4 transition-all">
+              Start Simulation <ArrowRight className="w-5 h-5" />
             </div>
           </div>
         </button>
       </motion.div>
 
       {/* Stats / Info */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="text-3xl font-black text-slate-900 dark:text-white mb-1">{questions.length}</div>
-          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Questions</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="text-3xl font-black text-slate-900 dark:text-white mb-1">3h</div>
-          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time Limit</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="text-3xl font-black text-slate-900 dark:text-white mb-1">{themes.length - 1}</div>
-          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Topics</div>
-        </div>
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="text-3xl font-black text-slate-900 dark:text-white mb-1">AI</div>
-          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tutor Support</div>
-        </div>
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center max-w-6xl mx-auto mb-16">
+        {[
+          { label: 'Questions', value: questions.length, icon: BookOpen, color: 'text-amber-600' },
+          { label: 'Time Limit', value: '3h', icon: Clock, color: 'text-yellow-600' },
+          { label: 'Topics', value: themes.length - 1, icon: Target, color: 'text-amber-700' },
+          { label: 'AI Tutor', value: 'Active', icon: Sparkles, color: 'text-amber-500' },
+        ].map((stat, i) => (
+          <div key={i} className="p-6 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 shadow-sm backdrop-blur-sm hover:-translate-y-1 transition-transform cursor-default">
+            <stat.icon className={`w-6 h-6 mx-auto mb-3 ${stat.color}`} />
+            <div className="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">{stat.value}</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat.label}</div>
+          </div>
+        ))}
       </motion.div>
 
       {/* Filter Section */}
-      <motion.div variants={itemVariants} className="mt-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-500" />
+      <motion.div variants={itemVariants} className="mt-16 bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50 rounded-3xl p-8 shadow-sm backdrop-blur-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h3 className="text-xl font-bold text-stone-800 dark:text-amber-100 flex items-center gap-2">
+            <Target className="w-6 h-6 text-amber-500" />
             Focus Your Study
           </h3>
-          <span className="text-sm text-gray-500 dark:text-slate-400">Select one or more topics to filter questions</span>
+          <span className="text-sm font-medium text-stone-500 dark:text-stone-400">Select topics to practice specifically</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {themes.map(t => {
@@ -121,9 +118,9 @@ export default function HomeView({ onStart, themes, selectedThemes, toggleTheme,
               <button
                 key={t}
                 onClick={() => toggleTheme(t)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${isSelected
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                  : 'bg-white dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
+                className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border ${isSelected
+                  ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-500/25 scale-105'
+                  : 'bg-white dark:bg-stone-900/50 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-amber-50 dark:hover:bg-stone-800 hover:border-amber-300 dark:hover:border-stone-600'
                   }`}
               >
                 {t}

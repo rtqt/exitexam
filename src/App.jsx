@@ -156,7 +156,13 @@ function ExamApp() {
 
   // Main Render Logic
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors duration-300 font-sans text-gray-900 dark:text-slate-50 selection:bg-blue-100 dark:selection:bg-blue-900">
+    <div className="min-h-screen bg-amber-50 dark:bg-stone-950 transition-colors duration-300 font-sans text-stone-900 dark:text-amber-50 selection:bg-amber-400/30 dark:selection:bg-amber-400/30">
+
+      {/* Background Gradients */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-amber-300/10 blur-[120px] dark:bg-amber-600/10"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-400/10 blur-[120px] dark:bg-yellow-600/10"></div>
+      </div>
 
       {view !== 'admin' && (
         <Header
@@ -168,99 +174,98 @@ function ExamApp() {
       )}
 
       {/* Main Content Area with AnimatePresence for transitions */}
-      <AnimatePresence mode="wait">
-        {view === 'admin' ? (
-          // AdminDashboard doesn't have animations yet, but wrapped logically
-          <AdminDashboard key="admin" onExit={() => setView('home')} />
-        ) : view === 'home' ? (
-          <HomeView
-            key="home"
-            onStart={handleStart}
-            themes={themes}
-            selectedThemes={selectedThemes}
-            toggleTheme={toggleTheme}
-            questions={questions}
-          />
-        ) : view === 'quiz' ? (
-          <div key="quiz" className="h-[calc(100vh-64px)] overflow-hidden">
-            {filteredQuestions.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-500 dark:text-slate-400 h-full">
-                <p className="mb-4">No questions found for this category.</p>
-                <button onClick={() => setView('home')} className="text-blue-600 dark:text-blue-400 hover:underline">Go Back Home</button>
-              </div>
-            ) : (
-              <QuizView
-                questions={filteredQuestions}
-                currentIdx={currentIdx}
-                userAnswers={userAnswers}
-                timeLeft={timeLeft}
-                isExamMode={isExamMode}
-                formatTime={formatTime}
-                onJump={(idx) => {
-                  setCurrentIdx(idx);
-                  setExplanation('');
-                  setExplainError('');
-                }}
-                onAnswer={handleAnswer}
-                onNext={() => {
-                  setCurrentIdx(currentIdx + 1);
-                  setExplanation('');
-                  setExplainError('');
-                }}
-                onPrev={() => {
-                  setCurrentIdx(currentIdx - 1);
-                  setExplanation('');
-                  setExplainError('');
-                }}
-                onFinish={handleFinish}
-                onQuit={() => { if (window.confirm('Quit exam? Progress will be lost.')) setView('home') }}
+      <div className="relative z-10">
+        <AnimatePresence mode="wait">
+          {view === 'admin' ? (
+            // AdminDashboard doesn't have animations yet, but wrapped logically
+            <AdminDashboard key="admin" onExit={() => setView('home')} />
+          ) : view === 'home' ? (
+            <HomeView
+              key="home"
+              onStart={handleStart}
+              themes={themes}
+              selectedThemes={selectedThemes}
+              toggleTheme={toggleTheme}
+              questions={questions}
+            />
+          ) : view === 'quiz' ? (
+            <div key="quiz" className="h-[calc(100vh-80px)] overflow-hidden">
+              {filteredQuestions.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-500 dark:text-slate-400 h-full">
+                  <p className="mb-4">No questions found for this category.</p>
+                  <button onClick={() => setView('home')} className="text-blue-600 dark:text-blue-400 hover:underline">Go Back Home</button>
+                </div>
+              ) : (
+                <QuizView
+                  questions={filteredQuestions}
+                  currentIdx={currentIdx}
+                  userAnswers={userAnswers}
+                  timeLeft={timeLeft}
+                  isExamMode={isExamMode}
+                  formatTime={formatTime}
+                  onJump={(idx) => {
+                    setCurrentIdx(idx);
+                    setExplanation('');
+                    setExplainError('');
+                  }}
+                  onAnswer={handleAnswer}
+                  onNext={() => {
+                    setCurrentIdx(currentIdx + 1);
+                    setExplanation('');
+                    setExplainError('');
+                  }}
+                  onPrev={() => {
+                    setCurrentIdx(currentIdx - 1);
+                    setExplanation('');
+                    setExplainError('');
+                  }}
+                  onFinish={handleFinish}
+                  onQuit={() => { if (window.confirm('Quit exam? Progress will be lost.')) setView('home') }}
 
-                explanation={explanation}
-                isExplaining={isExplaining}
-                explainError={explainError}
-                onAskAI={handleExplain}
-                onOpenSettings={() => setShowApiKeyModal(true)}
-              />
-            )}
-          </div>
-        ) : ( // Results View
-          <ResultsView
-            key="results"
-            score={score}
-            total={filteredQuestions.length}
-            passed={passed}
-            percentage={percentage}
-            onHome={() => setView('home')}
-          />
-        )}
-      </AnimatePresence>
+                  explanation={explanation}
+                  isExplaining={isExplaining}
+                  explainError={explainError}
+                  onAskAI={handleExplain}
+                  onOpenSettings={() => setShowApiKeyModal(true)}
+                />
+              )}
+            </div>
+          ) : ( // Results View
+            <ResultsView
+              key="results"
+              score={score}
+              total={filteredQuestions.length}
+              passed={passed}
+              percentage={percentage}
+              onHome={() => setView('home')}
+            />
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* API Key Modal - Overlay */}
       {showApiKeyModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          {/* ... (Keeping existing modal logic inline or could refactor too) ... */}
-          {/* Re-implementing the simple modal JSX here to keep it working without another file for now, or extract? */}
-          {/* Let's keep it here for now to save time, but it really should be a component. */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-700">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-800 animate-fadeIn">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">AI Tutor Settings</h3>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select Provider</label>
-              <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg">
+              <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                 <button
                   onClick={() => setAiProvider('groq')}
-                  className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${aiProvider === 'groq'
-                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${aiProvider === 'groq'
+                    ? 'bg-white dark:bg-stone-700 text-amber-600 dark:text-white shadow-sm'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
                     }`}
                 >
                   Groq (Fast)
                 </button>
                 <button
                   onClick={() => setAiProvider('gemini')}
-                  className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${aiProvider === 'gemini'
-                    ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-white shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${aiProvider === 'gemini'
+                    ? 'bg-white dark:bg-stone-700 text-amber-600 dark:text-white shadow-sm'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
                     }`}
                 >
                   Gemini (Smart)
@@ -289,7 +294,7 @@ function ExamApp() {
               value={tempApiKey}
               onChange={(e) => setTempApiKey(e.target.value)}
               placeholder={aiProvider === 'groq' ? "gsk_..." : "Gemini Key..."}
-              className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono text-sm"
+              className="w-full p-3 border border-amber-200 dark:border-stone-700 rounded-xl mb-4 focus:ring-2 focus:ring-amber-400 outline-none bg-amber-50/50 dark:bg-stone-800 text-stone-900 dark:text-white font-mono text-sm"
               autoFocus
             />
 
@@ -314,14 +319,14 @@ function ExamApp() {
                     setCheckingModels(false);
                   }
                 }}
-                className="text-xs text-blue-600 dark:text-blue-400 underline"
+                className="text-xs text-amber-600 dark:text-amber-400 underline hover:text-amber-800 dark:hover:text-amber-300"
               >
                 {checkingModels ? "Fetching..." : "List Available Models"}
               </button>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowApiKeyModal(false)}
-                  className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -335,7 +340,7 @@ function ExamApp() {
                     setTempApiKey('');
                     alert(`${aiProvider === 'groq' ? 'Groq' : 'Gemini'} Key saved!`);
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/20"
                 >
                   Save Key
                 </button>
@@ -343,7 +348,7 @@ function ExamApp() {
             </div>
 
             {availableModels.length > 0 && (
-              <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 max-h-32 overflow-y-auto text-xs font-mono text-slate-600 dark:text-slate-300">
+              <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 max-h-32 overflow-y-auto text-xs font-mono text-slate-600 dark:text-slate-300">
                 <strong>Available for your key:</strong>
                 <ul className="list-disc pl-4 mt-1">
                   {availableModels.map(m => <li key={m}>{m}</li>)}
@@ -364,7 +369,7 @@ function ExamApp() {
                     localStorage.setItem('groq_model', e.target.value);
                   }
                 }}
-                className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full p-2.5 rounded-lg border border-amber-200 dark:border-stone-600 bg-amber-50/50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-400 outline-none"
               >
                 {aiProvider === 'gemini' ? (
                   <>

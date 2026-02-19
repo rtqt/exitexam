@@ -109,6 +109,103 @@ export const extractQuestionsFromText = async (apiKey, text, model = "gemini-2.5
     }
 };
 
+export const extractQuestionsFromMultimodal = async (apiKey, images, model = "gemini-2.5-flash") => {
+    if (!apiKey || !images || images.length === 0) throw new Error("API Key and images are required.");
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
+
+    // Process images in batches to avoid payload limits if necessary, 
+    // but for now we'll try sending them all (or limiting to a reasonable number like 5 pages per chunk if we had detailed logic, 
+    // but simpler to just map them all).
+    // Note: Gemini has limits on number of image parts. 
+    // Let's assume the user uploads a reasonable PDF. unique images per request...
+    // To be safe, let's process page by page or small groups.
+    // Let's do page by page to ensure high quality extraction per page.
+
+    let allQuestions = [];
+
+    for (let i = 0; i < images.length; i++) {
+        const base64Image = images[i];
+
+        const prompt = `
+        You are an expert exam creator. Extract multiple-choice questions from this exam page image.
+        
+        CRITICAL INSTRUCTIONS:
+        - Extract ALL questions visible on this page.
+        - If a question refers to a diagram or image in the document, you MUST describe the diagram in the 'imageDescription' field.
+        - Return result strictly as a raw JSON array. No markdown.
+        
+        Format:
+        [
+            {
+                "theme": "Subject",
+                "question": "Question text",
+                "options": ["A", "B", "C", "D"],
+                "answer": 0, // index 0-3
+                "imageDescription": "Description of any diagram accompanying the question (optional)" 
+            }
+        ]
+        `;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            {
+                                inline_data: {
+                                    mime_type: "image/jpeg",
+                                    data: base64Image
+                                }
+                            }
+                        ]
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                console.error(`Gemini Image Page ${i + 1} Error:`, err);
+                continue; // Skip failed pages but try others
+            }
+
+            const data = await response.json();
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!content) continue;
+
+            const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(cleanContent);
+
+            let pageQuestions = [];
+            if (Array.isArray(parsed)) {
+                pageQuestions = parsed;
+            } else if (parsed.questions && Array.isArray(parsed.questions)) {
+                pageQuestions = parsed.questions;
+            }
+
+            if (pageQuestions.length > 0) {
+                allQuestions = [...allQuestions, ...pageQuestions];
+            }
+
+        } catch (error) {
+            console.warn(`Failed to parse page ${i + 1}:`, error);
+        }
+    }
+
+    if (allQuestions.length === 0) {
+        throw new Error("No questions extracted from images. Ensure images contains clear text/questions.");
+    }
+
+    return allQuestions;
+};
+
+
 export const explainQuestionGemini = async (apiKey, question, options, correctAnswerIndex, model = "gemini-2.5-flash") => {
     if (!apiKey) throw new Error("API Key is required");
 
