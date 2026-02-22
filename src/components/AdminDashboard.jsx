@@ -7,9 +7,11 @@ import { extractTextFromPDF, extractImagesFromPDF } from '../services/pdf';
 import { parseQuestionsRegex } from '../services/regexParser';
 
 import { extractQuestionsGroq } from '../services/groq';
+import { useAlert } from '../context/AlertContext';
 
 export default function AdminDashboard({ onExit }) {
     const { questions, addQuestion, addQuestions, deleteQuestion, updateQuestion, resetToDefault } = useQuestions();
+    const { showAlert, showConfirm } = useAlert();
     const [activeTab, setActiveTab] = useState('add');
     const [provider, setProvider] = useState('gemini');
 
@@ -43,10 +45,10 @@ export default function AdminDashboard({ onExit }) {
         if (editingId) {
             updateQuestion(editingId, newQ);
             setEditingId(null);
-            alert('Question updated!');
+            showAlert('Question updated!', 'success');
         } else {
             addQuestion(newQ);
-            alert('Question added!');
+            showAlert('Question added!', 'success');
         }
 
         setNewQ({ theme: newQ.theme, question: '', image: '', options: ['', '', '', ''], answer: 0 });
@@ -141,7 +143,7 @@ export default function AdminDashboard({ onExit }) {
         addQuestions(previewQuestions);
         setPreviewQuestions([]);
         setImportText('');
-        alert(`Successfully imported ${previewQuestions.length} questions!`);
+        showAlert(`Successfully imported ${previewQuestions.length} questions!`, 'success');
         setActiveTab('list');
     };
 
@@ -154,7 +156,10 @@ export default function AdminDashboard({ onExit }) {
                         <p className="text-gray-500 dark:text-slate-400">Manage exam questions and content</p>
                     </div>
                     <div className="flex gap-4">
-                        <button onClick={() => { if (window.confirm('Reset all questions to default?')) resetToDefault() }} className="text-red-500 hover:text-red-400 underline text-sm">Reset DB</button>
+                        <button onClick={async () => {
+                            const confirmed = await showConfirm('Reset all questions to default?');
+                            if (confirmed) resetToDefault();
+                        }} className="text-red-500 hover:text-red-400 underline text-sm">Reset DB</button>
                         <button
                             onClick={onExit}
                             className="bg-slate-800 dark:bg-slate-700 text-white px-6 py-2 rounded-xl font-medium hover:bg-slate-900 dark:hover:bg-slate-600 transition-all"
@@ -517,7 +522,10 @@ export default function AdminDashboard({ onExit }) {
                                                     <Edit className="w-5 h-5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => { if (window.confirm('Delete this question?')) deleteQuestion(q.id) }}
+                                                    onClick={async () => {
+                                                        const confirmed = await showConfirm('Delete this question?');
+                                                        if (confirmed) deleteQuestion(q.id);
+                                                    }}
                                                     className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                                                 >
                                                     <Trash2 className="w-5 h-5" />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { QuestionProvider, useQuestions } from './context/QuestionContext';
+import { AlertProvider, useAlert } from './context/AlertContext';
 import AdminDashboard from './components/AdminDashboard';
 import Header from './components/Header';
 import { explainQuestionGemini, getGeminiModels } from './services/gemini';
@@ -13,6 +14,7 @@ import ResultsView from './components/views/ResultsView';
 
 function ExamApp() {
   const { questions } = useQuestions();
+  const { showAlert, showConfirm } = useAlert();
   const [view, setView] = useState('home'); // home, quiz, results, admin
   const [currentIdx, setCurrentIdx] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -84,13 +86,14 @@ function ExamApp() {
     }
   }, [currentIdx, userAnswers, selectedThemes, view, isExamMode]);
 
-  const handleStart = (mode) => {
+  const handleStart = async (mode) => {
     if (mode === 'practice') {
       const savedStateStr = localStorage.getItem('practiceState');
       if (savedStateStr) {
         try {
           const savedState = JSON.parse(savedStateStr);
-          if (window.confirm('Resume previous practice session?')) {
+          const confirmed = await showConfirm('Resume previous practice session?');
+          if (confirmed) {
             setIsExamMode(false);
             setCurrentIdx(savedState.currentIdx || 0);
             setUserAnswers(savedState.userAnswers || {});
@@ -265,8 +268,9 @@ function ExamApp() {
                     setExplainError('');
                   }}
                   onFinish={handleFinish}
-                  onQuit={() => {
-                    if (window.confirm('Quit exam? Progress will be lost.')) {
+                  onQuit={async () => {
+                    const confirmed = await showConfirm('Quit exam? Progress will be lost.');
+                    if (confirmed) {
                       localStorage.removeItem('practiceState');
                       setView('home');
                     }
@@ -364,7 +368,7 @@ function ExamApp() {
                       setAvailableModels(models.map(m => m.id));
                     }
                   } catch (err) {
-                    alert("Error fetching models: " + err.message);
+                    showAlert("Error fetching models: " + err.message, 'error');
                   } finally {
                     setCheckingModels(false);
                   }
@@ -388,7 +392,7 @@ function ExamApp() {
                     localStorage.setItem('preferred_ai_provider', aiProvider);
                     setShowApiKeyModal(false);
                     setTempApiKey('');
-                    alert(`${aiProvider === 'groq' ? 'Groq' : 'Gemini'} Key saved!`);
+                    showAlert(`${aiProvider === 'groq' ? 'Groq' : 'Gemini'} Key saved!`, 'success');
                   }}
                   className="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/20"
                 >
@@ -447,8 +451,10 @@ function ExamApp() {
 
 export default function App() {
   return (
-    <QuestionProvider>
-      <ExamApp />
-    </QuestionProvider>
+    <AlertProvider>
+      <QuestionProvider>
+        <ExamApp />
+      </QuestionProvider>
+    </AlertProvider>
   );
 }
