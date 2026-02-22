@@ -72,7 +72,49 @@ function ExamApp() {
     return () => clearInterval(timer);
   }, [view, isExamMode, timeLeft]);
 
+  // Practice State Persistence
+  useEffect(() => {
+    if (view === 'quiz' && !isExamMode) {
+      const practiceState = {
+        currentIdx,
+        userAnswers,
+        selectedThemes
+      };
+      localStorage.setItem('practiceState', JSON.stringify(practiceState));
+    }
+  }, [currentIdx, userAnswers, selectedThemes, view, isExamMode]);
+
   const handleStart = (mode) => {
+    if (mode === 'practice') {
+      const savedStateStr = localStorage.getItem('practiceState');
+      if (savedStateStr) {
+        try {
+          const savedState = JSON.parse(savedStateStr);
+          if (window.confirm('Resume previous practice session?')) {
+            setIsExamMode(false);
+            setCurrentIdx(savedState.currentIdx || 0);
+            setUserAnswers(savedState.userAnswers || {});
+            if (savedState.selectedThemes) {
+              setSelectedThemes(savedState.selectedThemes);
+            }
+            setTimeLeft(180 * 60);
+            setView('quiz');
+            setExplanation('');
+            setExplainError('');
+            return;
+          } else {
+            localStorage.removeItem('practiceState');
+          }
+        } catch (e) {
+          console.error("Failed to parse practice state", e);
+          localStorage.removeItem('practiceState');
+        }
+      }
+    } else {
+      // Starting exam mode, clear any practice state just in case
+      localStorage.removeItem('practiceState');
+    }
+
     setIsExamMode(mode === 'exam');
     setUserAnswers({});
     setCurrentIdx(0);
@@ -87,6 +129,9 @@ function ExamApp() {
   };
 
   const handleFinish = () => {
+    if (!isExamMode) {
+      localStorage.removeItem('practiceState');
+    }
     setView('results');
   };
 
@@ -220,7 +265,12 @@ function ExamApp() {
                     setExplainError('');
                   }}
                   onFinish={handleFinish}
-                  onQuit={() => { if (window.confirm('Quit exam? Progress will be lost.')) setView('home') }}
+                  onQuit={() => {
+                    if (window.confirm('Quit exam? Progress will be lost.')) {
+                      localStorage.removeItem('practiceState');
+                      setView('home');
+                    }
+                  }}
 
                   explanation={explanation}
                   isExplaining={isExplaining}
