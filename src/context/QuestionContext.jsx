@@ -11,7 +11,22 @@ export function useQuestions() {
 export function QuestionProvider({ children }) {
     const [questions, setQuestions] = useState(() => {
         const saved = localStorage.getItem('exit-exam-questions');
-        return saved ? JSON.parse(saved) : INITIAL_QUESTIONS;
+        if (saved) {
+            const parsedSaved = JSON.parse(saved);
+            // If the hardcoded initial questions grew larger (i.e. developer added more),
+            // let's prefer the new list or merge. Because we want new ones to show up.
+            // For simplicity, if parsed length is less than initial length, we merge or override.
+            if (parsedSaved.length < INITIAL_QUESTIONS.length) {
+                // To keep custom added tracking, you could merge, but resetting to INITIAL_QUESTIONS + custom is tricky.
+                // Simple approach: just use the new INITIAL_QUESTIONS entirely,
+                // or concatenate INITIAL_QUESTIONS that aren't in parsedSaved.
+                const existingIds = new Set(parsedSaved.map(q => q.id));
+                const newQuestions = INITIAL_QUESTIONS.filter(q => !existingIds.has(q.id));
+                return [...parsedSaved, ...newQuestions];
+            }
+            return parsedSaved;
+        }
+        return INITIAL_QUESTIONS;
     });
 
     useEffect(() => {
