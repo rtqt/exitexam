@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import QuestionSidebar from '../quiz/QuestionSidebar';
@@ -27,6 +27,22 @@ export default function QuizView({
   const currentQuestion = questions[currentIdx];
   const isAnswered = userAnswers[currentIdx] !== undefined;
   const isLastQuestion = currentIdx === questions.length - 1;
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't trigger if user is typing in an input (though unlikely in this view)
+      if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+
+      if (e.key === 'ArrowRight') {
+        if (isAnswered && !isLastQuestion) onNext();
+      } else if (e.key === 'ArrowLeft') {
+        if (currentIdx > 0) onPrev();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIdx, isAnswered, isLastQuestion, onNext, onPrev]);
 
   if (!currentQuestion) return null;
 
