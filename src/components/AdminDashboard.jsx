@@ -36,6 +36,26 @@ export default function AdminDashboard({ onExit }) {
     const [importError, setImportError] = useState('');
     const [previewQuestions, setPreviewQuestions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isDragging, setIsDragging] = useState(false);
+
+    // Drag and Drop Handlers
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleFileUpload({ target: { files: e.dataTransfer.files } });
+        }
+    };
 
     // Manual Add/Edit Handler
     const handleManualAdd = (e) => {
@@ -355,15 +375,41 @@ export default function AdminDashboard({ onExit }) {
 
                                         {/* PDF UPLOAD */}
                                         <div>
-                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Use a Document (PDF)</label>
-                                            <div className="flex items-center gap-4">
-                                                <label className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 p-2 rounded-lg cursor-pointer border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-200 font-medium transition-all">
-                                                    <FileText className="w-4 h-4" />
-                                                    {isParsingPDF ? 'Reading PDF...' : 'Select PDF File'}
+                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Use a Document (PDF)</label>
+                                            <div
+                                                className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-xl transition-all ${isDragging
+                                                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                                        : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 bg-slate-50 dark:bg-slate-800/50'
+                                                    }`}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                            >
+                                                <div className={`p-4 rounded-full mb-3 transition-colors ${isDragging ? 'bg-purple-100 dark:bg-purple-800 text-purple-600 dark:text-purple-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                                                    <FileText className="w-8 h-8" />
+                                                </div>
+                                                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 text-center mb-1">
+                                                    {isDragging ? 'Drop your PDF here' : 'Drag & drop your PDF here'}
+                                                </p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">or</p>
+
+                                                <label className="flex items-center gap-2 px-6 py-2.5 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-lg cursor-pointer border border-slate-200 dark:border-slate-600 transition-all shadow-sm">
+                                                    Browse Files
                                                     <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} disabled={isParsingPDF} />
                                                 </label>
-                                                {isParsingPDF && <Loader2 className="animate-spin w-4 h-4 text-purple-600" />}
-                                                {importText && <span className="text-xs text-green-600 dark:text-green-400 font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Ready</span>}
+                                            </div>
+
+                                            <div className="mt-3 flex items-center justify-center min-h-[24px]">
+                                                {isParsingPDF && (
+                                                    <span className="text-sm text-purple-600 dark:text-purple-400 font-medium flex items-center gap-2">
+                                                        <Loader2 className="animate-spin w-4 h-4" /> Parsing Document...
+                                                    </span>
+                                                )}
+                                                {!isParsingPDF && importText && (
+                                                    <span className="text-sm text-green-600 dark:text-green-400 font-bold flex items-center gap-1">
+                                                        <Check className="w-4 h-4" /> Document Ready
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
 
