@@ -3,14 +3,15 @@
 
 @layer base {
     :root {
-        /* Light mode: warm cream/ivory */
-        --background: 38 60% 97%;
+        /* Light mode: eye-comforting soft beige */
+        /* adjusted to a gentler off-white (#f7f7f2) to reduce eye strain */
+        --background: 40 24% 96%;
         --foreground: 24 40% 12%;
 
-        --card: 36 80% 99%;
+        --card: 40 50% 96%;
         --card-foreground: 24 40% 12%;
 
-        --popover: 36 80% 99%;
+        --popover: 40 50% 96%;
         --popover-foreground: 24 40% 12%;
 
         /* Golden amber primary */

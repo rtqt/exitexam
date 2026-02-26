@@ -291,6 +291,8 @@ function ExamApp() {
               total={filteredQuestions.length}
               passed={passed}
               percentage={percentage}
+              questions={filteredQuestions}
+              userAnswers={userAnswers}
               onHome={() => setView('home')}
             />
           )}

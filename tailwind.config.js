@@ -11,6 +11,7 @@ export default {
                 sans: ['Outfit', 'sans-serif'],
             },
             colors: {
+                white: '#FBF9F6', // Eye-comforting warm off-white (less harsh than pure white)
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
