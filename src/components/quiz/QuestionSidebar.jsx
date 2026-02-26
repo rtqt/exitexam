@@ -1,14 +1,16 @@
 import React from 'react';
 import { LayoutGrid, Clock, CheckCircle, Circle, HelpCircle } from 'lucide-react';
 
-export default function QuestionSidebar({ questions, currentIdx, userAnswers, timeLeft, isExamMode, onJump, formatTime }) {
+export default function QuestionSidebar({ questions, currentIdx, userAnswers, timeLeft, isExamMode, onJump, formatTime, mobile=false }) {
   // Calculate stats
   const answeredCount = Object.keys(userAnswers).length;
   const totalCount = questions.length;
   const progress = Math.round((answeredCount / totalCount) * 100);
 
+  const rootClass = `w-80 h-full flex flex-col ${mobile ? '' : 'hidden md:flex'} z-20 border-r border-amber-100 dark:border-stone-800 bg-amber-50/30 dark:bg-stone-900 shadow-xl transition-all duration-300`;
+
   return (
-    <div className="w-80 h-full flex flex-col hidden md:flex z-20 border-r border-amber-100 dark:border-stone-800 bg-amber-50/30 dark:bg-stone-900 shadow-xl transition-all duration-300">
+    <div className={rootClass}>
 
       {/* Sidebar Header */}
       <div className="p-6 border-b border-amber-100 dark:border-stone-800 bg-amber-50/50 dark:bg-stone-900/50 backdrop-blur-sm">
@@ -68,7 +70,10 @@ export default function QuestionSidebar({ questions, currentIdx, userAnswers, ti
             return (
               <button
                 key={i}
-                onClick={() => onJump(i)}
+                onClick={() => {
+                  onJump(i);
+                  // mobile overlay may close via parent, but no harm calling if provided
+                }}
                 className={btnClass}
               >
                 <span className="z-10">{i + 1}</span>
