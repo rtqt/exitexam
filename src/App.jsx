@@ -235,6 +235,7 @@ function ExamApp() {
               selectedThemes={selectedThemes}
               toggleTheme={toggleTheme}
               questions={questions}
+              goAdmin={() => setView('admin')}
             />
           ) : view === 'quiz' ? (
             <div key="quiz" className="h-[calc(100vh-80px)] overflow-hidden">

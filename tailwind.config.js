@@ -8,7 +8,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Outfit', 'sans-serif'],
+                sans: ['Roboto', 'sans-serif'],
             },
             colors: {
                 white: '#FBF9F6', // Eye-comforting warm off-white (less harsh than pure white)

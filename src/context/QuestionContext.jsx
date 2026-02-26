@@ -9,29 +9,38 @@ export function useQuestions() {
 }
 
 export function QuestionProvider({ children }) {
+    // track whether we're using the built-in questions or a clean slate
+    const [initMode, setInitMode] = useState(() => {
+        return localStorage.getItem('exit-exam-init-mode') || 'default';
+    });
+
     const [questions, setQuestions] = useState(() => {
+        const savedMode = localStorage.getItem('exit-exam-init-mode') || 'default';
         const saved = localStorage.getItem('exit-exam-questions');
         if (saved) {
             const parsedSaved = JSON.parse(saved);
-            // If the hardcoded initial questions grew larger (i.e. developer added more),
+            // if user explicitly started clean, just return whatever is saved (likely [])
+            if (savedMode === 'clean') {
+                return parsedSaved;
+            }
+            // if the hardcoded initial questions grew larger (i.e. developer added more),
             // let's prefer the new list or merge. Because we want new ones to show up.
             // For simplicity, if parsed length is less than initial length, we merge or override.
             if (parsedSaved.length < INITIAL_QUESTIONS.length) {
-                // To keep custom added tracking, you could merge, but resetting to INITIAL_QUESTIONS + custom is tricky.
-                // Simple approach: just use the new INITIAL_QUESTIONS entirely,
-                // or concatenate INITIAL_QUESTIONS that aren't in parsedSaved.
                 const existingIds = new Set(parsedSaved.map(q => q.id));
                 const newQuestions = INITIAL_QUESTIONS.filter(q => !existingIds.has(q.id));
                 return [...parsedSaved, ...newQuestions];
             }
             return parsedSaved;
         }
-        return INITIAL_QUESTIONS;
+        // no saved questions yet, choose based on mode
+        return savedMode === 'clean' ? [] : INITIAL_QUESTIONS;
     });
 
     useEffect(() => {
         localStorage.setItem('exit-exam-questions', JSON.stringify(questions));
-    }, [questions]);
+        localStorage.setItem('exit-exam-init-mode', initMode);
+    }, [questions, initMode]);
 
     const addQuestion = (question) => {
         setQuestions(prev => {
@@ -60,12 +69,18 @@ export function QuestionProvider({ children }) {
         setQuestions(prev => prev.map(q => q.id === id ? { ...q, ...updatedData } : q));
     };
 
+    const clearQuestions = () => {
+        setQuestions([]);
+        setInitMode('clean');
+    };
+
     const resetToDefault = () => {
         setQuestions(INITIAL_QUESTIONS);
+        setInitMode('default');
     };
 
     return (
-        <QuestionContext.Provider value={{ questions, addQuestion, addQuestions, deleteQuestion, updateQuestion, resetToDefault }}>
+        <QuestionContext.Provider value={{ questions, addQuestion, addQuestions, deleteQuestion, updateQuestion, resetToDefault, clearQuestions, initMode }}>
             {children}
         </QuestionContext.Provider>
     );

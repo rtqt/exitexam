@@ -1,8 +1,27 @@
 import React from 'react';
 import { Sparkles, ListChecks, ArrowRight, Clock, Target, BookOpen, Trophy, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useQuestions } from '../../context/QuestionContext';
+import { useAlert } from '../../context/AlertContext';
 
-export default function HomeView({ onStart, themes, selectedThemes, toggleTheme, questions }) {
+export default function HomeView({ onStart, themes, selectedThemes, toggleTheme, questions, goAdmin }) {
+  const { resetToDefault, clearQuestions, initMode } = useQuestions();
+  const { showAlert, showConfirm } = useAlert();
+
+  const handleSwitchToDefault = () => {
+    resetToDefault();
+    showAlert('Question bank reset to default questions.', 'success');
+  };
+
+  const handleStartClean = async () => {
+    const confirmed = await showConfirm('Start with an empty question bank? All existing items will be removed.');
+    if (confirmed) {
+      clearQuestions();
+      showAlert('Question bank cleared. You can add new questions using the Admin Dashboard.', 'success');
+      if (goAdmin) goAdmin();
+    }
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -100,6 +119,23 @@ export default function HomeView({ onStart, themes, selectedThemes, toggleTheme,
             <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat.label}</div>
           </div>
         ))}
+      </motion.div>
+
+      {/* Mode controls */}
+      <motion.div variants={itemVariants} className="max-w-4xl mx-auto mb-12 py-6 px-4 bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-slate-700/50 rounded-3xl shadow-sm backdrop-blur-md">
+        <div className="text-center space-y-3">
+          <p className="text-sm text-stone-600 dark:text-stone-300">
+            Question bank mode: <span className="font-semibold text-stone-800 dark:text-white">{initMode === 'clean' ? 'Empty / custom' : 'Default questions'}</span>
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <button onClick={handleSwitchToDefault} className="px-5 py-2.5 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition">
+              Use Initial Questions
+            </button>
+            <button onClick={handleStartClean} className="px-5 py-2.5 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition">
+              Start Clean
+            </button>
+          </div>
+        </div>
       </motion.div>
 
       {/* Filter Section */}

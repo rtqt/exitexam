@@ -60,7 +60,7 @@ export default function AIExplanation({
             <Brain className="w-5 h-5" />
             AI Explanation
           </h3>
-          <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+          <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-lg">
             {explanation}
           </div>
         </motion.div>

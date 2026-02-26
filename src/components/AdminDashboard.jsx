@@ -10,7 +10,7 @@ import { extractQuestionsGroq } from '../services/groq';
 import { useAlert } from '../context/AlertContext';
 
 export default function AdminDashboard({ onExit }) {
-    const { questions, addQuestion, addQuestions, deleteQuestion, updateQuestion, resetToDefault } = useQuestions();
+    const { questions, addQuestion, addQuestions, deleteQuestion, updateQuestion, resetToDefault, clearQuestions, initMode } = useQuestions();
     const { showAlert, showConfirm } = useAlert();
     const [activeTab, setActiveTab] = useState('add');
     const [provider, setProvider] = useState('gemini');
@@ -180,6 +180,13 @@ export default function AdminDashboard({ onExit }) {
                             const confirmed = await showConfirm('Reset all questions to default?');
                             if (confirmed) resetToDefault();
                         }} className="text-red-500 hover:text-red-400 underline text-sm">Reset DB</button>
+                        <button onClick={async () => {
+                            const confirmed = await showConfirm('Clear all questions and start with an empty board? This cannot be undone.');
+                            if (confirmed) {
+                                clearQuestions();
+                                showAlert('Question bank emptied. Add new questions via the Admin interface.','success');
+                            }
+                        }} className="text-red-500 hover:text-red-400 underline text-sm ml-4">Start Clean</button>
                         <button
                             onClick={onExit}
                             className="bg-slate-800 dark:bg-slate-700 text-white px-6 py-2 rounded-xl font-medium hover:bg-slate-900 dark:hover:bg-slate-600 transition-all"
@@ -217,6 +224,7 @@ export default function AdminDashboard({ onExit }) {
                         <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl mt-6 border border-slate-200 dark:border-slate-700 shadow-sm">
                             <h3 className="font-bold text-gray-700 dark:text-slate-200 mb-2">Stats</h3>
                             <p className="text-sm text-gray-500 dark:text-slate-400">Total Questions: <span className="font-bold text-gray-800 dark:text-white">{questions.length}</span></p>
+                            <p className="text-xs text-gray-400">Mode: <span className="font-semibold text-gray-800 dark:text-white">{initMode === 'clean' ? 'Empty / custom' : 'Default questions'}</span></p>
                             <div className="mt-2 text-xs text-gray-400 space-y-1">
                                 {[...new Set(questions.map(q => q.theme))].slice(0, 5).map(t => (
                                     <div key={t} className="flex justify-between">
