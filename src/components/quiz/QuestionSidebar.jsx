@@ -1,9 +1,9 @@
 import React from 'react';
 import { LayoutGrid, Clock, CheckCircle, Circle, HelpCircle } from 'lucide-react';
 
-export default function QuestionSidebar({ questions, currentIdx, userAnswers, timeLeft, isExamMode, onJump, formatTime, mobile=false }) {
+export default function QuestionSidebar({ questions, currentIdx, userAnswers, timeLeft, isExamMode, flagged = {}, onToggleFlag, onJump, formatTime, mobile=false }) {
   // Calculate stats
-  const answeredCount = Object.keys(userAnswers).length;
+  const answeredCount = Object.keys(userAnswers || {}).length;
   const totalCount = questions.length;
   const progress = Math.round((answeredCount / totalCount) * 100);
 
@@ -55,7 +55,9 @@ export default function QuestionSidebar({ questions, currentIdx, userAnswers, ti
         <div className="grid grid-cols-5 gap-2.5">
           {questions.map((_, i) => {
             const isCurrent = currentIdx === i;
-            const isAnswered = userAnswers[i] !== undefined;
+            const q = questions[i];
+            const isAnswered = userAnswers && userAnswers[q.id] !== undefined;
+            const isFlagged = flagged && flagged[q.id];
 
             let btnClass = "aspect-square flex flex-col items-center justify-center text-xs font-bold rounded-xl transition-all duration-200 relative group ";
 
@@ -77,6 +79,9 @@ export default function QuestionSidebar({ questions, currentIdx, userAnswers, ti
                 className={btnClass}
               >
                 <span className="z-10">{i + 1}</span>
+                {isFlagged && (
+                  <div className="absolute top-1 left-1 text-xs text-red-500">⚑</div>
+                )}
                 {isAnswered && !isCurrent && (
                   <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
                 )}

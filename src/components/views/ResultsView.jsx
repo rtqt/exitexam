@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import WrongAnswerAnalysis from '../quiz/WrongAnswerAnalysis';
 
-export default function ResultsView({ score, total, passed, percentage, questions, userAnswers, onHome }) {
+export default function ResultsView({ score, total, passed, percentage, questions, userAnswers, onHome, onReview }) {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const resultID = React.useMemo(() => Math.random().toString(36).substr(2, 9).toUpperCase(), []);
   const date = React.useMemo(() => new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }), []);
@@ -148,6 +148,15 @@ export default function ResultsView({ score, total, passed, percentage, question
           </AnimatePresence>
 
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+            {onReview && (
+              <button
+                onClick={onReview}
+                className="flex-1 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-white py-4 px-8 rounded-xl font-bold border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                Review & Edit Answers
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={onHome}
               className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-4 px-8 rounded-xl font-bold shadow-xl shadow-amber-500/20 hover:shadow-2xl hover:shadow-amber-500/30 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2 group"

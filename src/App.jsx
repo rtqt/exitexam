@@ -17,7 +17,25 @@ function ExamApp() {
   const { showAlert, showConfirm } = useAlert();
   const [view, setView] = useState('home'); // home, quiz, results, admin
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({});
+  const [userAnswers, setUserAnswers] = useState(() => {
+    // stored as { [questionId]: optionIndex }
+    try {
+      const raw = localStorage.getItem('exit-exam-userAnswers');
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  const [flagged, setFlagged] = useState(() => {
+    try {
+      const raw = localStorage.getItem('exit-exam-flagged');
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  const [examCompleted, setExamCompleted] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState(180 * 60); // 3 hours in seconds
   const [isExamMode, setIsExamMode] = useState(false);
   const [selectedThemes, setSelectedThemes] = useState([]);
@@ -84,6 +102,11 @@ function ExamApp() {
       };
       localStorage.setItem('practiceState', JSON.stringify(practiceState));
     }
+    // persist userAnswers and flags
+    try {
+      localStorage.setItem('exit-exam-userAnswers', JSON.stringify(userAnswers || {}));
+      localStorage.setItem('exit-exam-flagged', JSON.stringify(flagged || {}));
+    } catch (e) {}
   }, [currentIdx, userAnswers, selectedThemes, view, isExamMode]);
 
   const handleStart = async (mode) => {
@@ -96,7 +119,21 @@ function ExamApp() {
           if (confirmed) {
             setIsExamMode(false);
             setCurrentIdx(savedState.currentIdx || 0);
-            setUserAnswers(savedState.userAnswers || {});
+            // migrate saved answers if needed (index-keyed -> id-keyed)
+            const savedAnswers = savedState.userAnswers || {};
+            if (savedAnswers && Object.keys(savedAnswers).length > 0) {
+              const migrated = {};
+              Object.keys(savedAnswers).forEach(k => {
+                const idx = Number(k);
+                if (!Number.isNaN(idx) && questions[idx]) {
+                  migrated[questions[idx].id] = savedAnswers[k];
+                }
+              });
+              // fallback: if migration produced nothing, keep original shape
+              setUserAnswers(Object.keys(migrated).length ? migrated : savedAnswers);
+            } else {
+              setUserAnswers({});
+            }
             if (savedState.selectedThemes) {
               setSelectedThemes(savedState.selectedThemes);
             }
@@ -119,6 +156,7 @@ function ExamApp() {
     }
 
     setIsExamMode(mode === 'exam');
+    setExamCompleted(false);
     setUserAnswers({});
     setCurrentIdx(0);
     setTimeLeft(180 * 60);
@@ -127,21 +165,30 @@ function ExamApp() {
     setExplainError('');
   };
 
-  const handleAnswer = (optionIdx) => {
-    setUserAnswers({ ...userAnswers, [currentIdx]: optionIdx });
+  const handleAnswer = (questionId, optionIdx) => {
+    setUserAnswers(prev => ({ ...prev, [questionId]: optionIdx }));
   };
 
   const handleFinish = () => {
+    // show confirmation modal listing flagged and unanswered questions
+    setShowFinishModal(true);
+  };
+
+  const confirmFinish = () => {
     if (!isExamMode) {
       localStorage.removeItem('practiceState');
     }
+    setExamCompleted(true);
+    setShowFinishModal(false);
     setView('results');
   };
 
+  const cancelFinish = () => setShowFinishModal(false);
+
   const calculateScore = () => {
     let score = 0;
-    filteredQuestions.forEach((q, idx) => {
-      if (userAnswers[idx] === q.answer) score++;
+    filteredQuestions.forEach((q) => {
+      if (userAnswers[q.id] === q.answer) score++;
     });
     return score;
   };
@@ -164,6 +211,10 @@ function ExamApp() {
   };
 
   const handleExplain = async (question, options, answerIdx) => {
+    if (isExamMode) {
+      showAlert('AI explanations are disabled in exam mode.', 'warning');
+      return;
+    }
     const providerKeyName = aiProvider === 'gemini' ? 'gemini_api_key' : 'groq_api_key';
     const savedKey = localStorage.getItem(providerKeyName);
 
@@ -195,6 +246,16 @@ function ExamApp() {
     }
   };
 
+  const toggleFlag = (questionId) => {
+    setFlagged(prev => {
+      const next = { ...(prev || {}) };
+      if (next[questionId]) delete next[questionId];
+      else next[questionId] = true;
+      try { localStorage.setItem('exit-exam-flagged', JSON.stringify(next)); } catch (e) {}
+      return next;
+    });
+  };
+
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -211,6 +272,43 @@ function ExamApp() {
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-amber-300/10 blur-[120px] dark:bg-amber-600/10"></div>
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-400/10 blur-[120px] dark:bg-yellow-600/10"></div>
       </div>
+
+      {/* Finish Confirmation Modal */}
+      {showFinishModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <h3 className="text-lg font-bold mb-3">Finish Exam?</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">You're about to finish. Review flagged and unanswered questions before submitting.</p>
+            <div className="mb-4">
+              <div className="mb-2 font-semibold">Flagged Questions</div>
+              <div className="flex flex-wrap gap-2">
+                {Object.keys(flagged || {}).length === 0 && <span className="text-sm text-slate-500">None</span>}
+                {Object.keys(flagged || {}).map(id => {
+                  const idx = filteredQuestions.findIndex(q => q.id === id);
+                  return idx >= 0 ? (
+                    <span key={id} className="px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-md text-sm">Q{idx + 1}</span>
+                  ) : null;
+                })}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="mb-2 font-semibold">Unanswered Questions</div>
+              <div className="flex flex-wrap gap-2">
+                {filteredQuestions.map((q, i) => userAnswers[q.id] === undefined ? (
+                  <span key={q.id} className="px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 rounded-md text-sm">Q{i + 1}</span>
+                ) : null)}
+                {filteredQuestions.every(q => userAnswers[q.id] !== undefined) && <span className="text-sm text-slate-500">None</span>}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button onClick={cancelFinish} className="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">Cancel</button>
+              <button onClick={confirmFinish} className="px-4 py-2 rounded-lg bg-amber-500 text-white font-bold">Confirm Finish</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {view !== 'admin' && (
         <Header
@@ -251,6 +349,9 @@ function ExamApp() {
                   userAnswers={userAnswers}
                   timeLeft={timeLeft}
                   isExamMode={isExamMode}
+                  examCompleted={examCompleted}
+                  flagged={flagged}
+                  onToggleFlag={toggleFlag}
                   formatTime={formatTime}
                   onJump={(idx) => {
                     setCurrentIdx(idx);
@@ -295,6 +396,11 @@ function ExamApp() {
               questions={filteredQuestions}
               userAnswers={userAnswers}
               onHome={() => setView('home')}
+              onReview={() => {
+                setIsExamMode(true);
+                setExamCompleted(true);
+                setView('quiz');
+              }}
             />
           )}
         </AnimatePresence>

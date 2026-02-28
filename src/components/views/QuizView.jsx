@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Flag, Menu, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Flag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import QuestionSidebar from '../quiz/QuestionSidebar';
 import QuestionCard from '../quiz/QuestionCard';
@@ -10,9 +10,12 @@ export default function QuizView({
   userAnswers,
   timeLeft,
   isExamMode,
+  examCompleted,
+  flagged,
+  onToggleFlag,
   formatTime,
   onJump, // expects (index)
-  onAnswer, // expects (optionIndex)
+  onAnswer, // expects (questionId, optionIndex)
   onNext,
   onPrev,
   onFinish,
@@ -24,11 +27,8 @@ export default function QuizView({
   onAskAI,
   onOpenSettings
 }) {
-  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
-  const closeMobileNav = () => setMobileNavOpen(false);
-  const jumpAndClose = (idx) => { onJump(idx); closeMobileNav(); };
   const currentQuestion = questions[currentIdx];
-  const isAnswered = userAnswers[currentIdx] !== undefined;
+  const isAnswered = currentQuestion && userAnswers[currentQuestion.id] !== undefined;
   const isLastQuestion = currentIdx === questions.length - 1;
 
   useEffect(() => {
@@ -57,60 +57,22 @@ export default function QuizView({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
     >
-      {/* Desktop sidebar */}
       <QuestionSidebar
         questions={questions}
         currentIdx={currentIdx}
         userAnswers={userAnswers}
         timeLeft={timeLeft}
         isExamMode={isExamMode}
+          flagged={flagged}
+          onToggleFlag={onToggleFlag}
         onJump={onJump}
         formatTime={formatTime}
       />
 
-      {/* Mobile navigation overlay */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-40 flex">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={closeMobileNav}
-          />
-          <div className="relative w-80 h-full bg-amber-50/30 dark:bg-stone-900 shadow-xl flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-amber-100 dark:border-stone-800">
-              <span className="font-bold">Navigator</span>
-              <button
-                onClick={closeMobileNav}
-                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:bg-slate-800/50 transition-all active:scale-95"
-                aria-label="Close navigator"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <QuestionSidebar
-              questions={questions}
-              currentIdx={currentIdx}
-              userAnswers={userAnswers}
-              timeLeft={timeLeft}
-              isExamMode={isExamMode}
-              onJump={jumpAndClose}
-              formatTime={formatTime}
-              mobile={true}
-            />
-          </div>
-        </div>
-      )}
-
       {/* MAIN CONTENT (Right) */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 relative scroll-smooth custom-scrollbar">
-        {/* Mobile Header (Timer & Navigation Toggle) */}
+        {/* Mobile Header (Timer & Close) */}
         <div className="md:hidden flex justify-between items-center mb-6 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-          <button
-            onClick={() => setMobileNavOpen(true)}
-            className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:bg-slate-800/50 transition-all active:scale-95"
-            aria-label="Open question navigator"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
           <span className="text-sm font-bold text-slate-500">Q{currentIdx + 1} / {questions.length}</span>
           {isExamMode && (
             <div className={`flex items-center gap-2 font-mono font-bold ${timeLeft < 300 ? 'text-red-500' : 'text-slate-700 dark:text-slate-200'}`}>
@@ -124,9 +86,12 @@ export default function QuizView({
           question={currentQuestion}
           currentIdx={currentIdx}
           totalCount={questions.length}
-          userAnswer={userAnswers[currentIdx]}
+          userAnswer={currentQuestion ? userAnswers[currentQuestion.id] : undefined}
           isAnswered={isAnswered}
           isExamMode={isExamMode}
+          examCompleted={examCompleted}
+          flagged={flagged && currentQuestion ? !!flagged[currentQuestion.id] : false}
+          onToggleFlag={onToggleFlag}
           onAnswer={onAnswer}
           onQuit={onQuit}
           explanation={explanation}
@@ -153,7 +118,7 @@ export default function QuizView({
 
           {isLastQuestion ? (
             <button
-              disabled={userAnswers[currentIdx] === undefined}
+              disabled={!currentQuestion || userAnswers[currentQuestion.id] === undefined}
               onClick={onFinish}
               className="flex items-center gap-2 bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 shadow-xl shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95"
             >
@@ -162,7 +127,7 @@ export default function QuizView({
             </button>
           ) : (
             <button
-              disabled={userAnswers[currentIdx] === undefined}
+              disabled={!currentQuestion || userAnswers[currentQuestion.id] === undefined}
               onClick={onNext}
               className="flex items-center gap-2 bg-amber-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-amber-600 shadow-xl shadow-amber-500/30 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95"
             >

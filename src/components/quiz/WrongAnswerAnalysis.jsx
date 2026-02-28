@@ -9,7 +9,7 @@ export default function WrongAnswerAnalysis({ questions, userAnswers }) {
         const stats = {};
 
         questions.forEach((q, idx) => {
-            const userAnswer = userAnswers[idx];
+            const userAnswer = userAnswers && userAnswers[q.id];
             const isCorrect = userAnswer === q.answer;
 
             // Initialize theme stats if not exists

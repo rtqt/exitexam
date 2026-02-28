@@ -9,6 +9,9 @@ export default function QuestionCard({
   userAnswer,
   isAnswered,
   isExamMode,
+  examCompleted,
+  flagged,
+  onToggleFlag,
   onAnswer,
   onQuit,
   // AI Props
@@ -40,6 +43,13 @@ export default function QuestionCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => onToggleFlag && onToggleFlag(question.id)}
+              className={`p-2 rounded-lg text-sm font-bold ${flagged ? 'text-red-600 bg-red-50 dark:bg-red-900/20' : 'text-slate-500 hover:bg-slate-100/50 dark:text-slate-400'}`}
+              aria-label="Flag question"
+            >
+              {flagged ? '⚑ Flagged' : 'Flag'}
+            </button>
             <span className="inline-block px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-bold uppercase tracking-wide border border-amber-200 dark:border-amber-800">
               {question.theme}
             </span>
@@ -117,20 +127,28 @@ export default function QuestionCard({
                     containerClasses += " cursor-default";
 
                     if (isSelected) {
-                      if (isCorrect) {
-                        // User selected correct
-                        bgClasses = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 dark:border-emerald-500/50";
-                        textClasses = "text-emerald-800 dark:text-emerald-200 font-bold";
-                        indicatorClasses = "bg-emerald-500 text-white";
-                        indicatorBorder = "border-transparent";
+                      if (!isExamMode || examCompleted) {
+                        if (isCorrect) {
+                          // User selected correct
+                          bgClasses = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 dark:border-emerald-500/50";
+                          textClasses = "text-emerald-800 dark:text-emerald-200 font-bold";
+                          indicatorClasses = "bg-emerald-500 text-white";
+                          indicatorBorder = "border-transparent";
+                        } else {
+                          // User selected incorrect
+                          bgClasses = "bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-500/50";
+                          textClasses = "text-red-800 dark:text-red-200 font-bold";
+                          indicatorClasses = "bg-red-500 text-white";
+                          indicatorBorder = "border-transparent";
+                        }
                       } else {
-                        // User selected incorrect
-                        bgClasses = "bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-500/50";
-                        textClasses = "text-red-800 dark:text-red-200 font-bold";
-                        indicatorClasses = "bg-red-500 text-white";
-                        indicatorBorder = "border-transparent";
+                        // Exam mode but still editable: keep neutral selected styling
+                        bgClasses = "bg-amber-50 dark:bg-amber-900/20 border-amber-500";
+                        textClasses = "text-stone-700 dark:text-stone-100 font-medium";
+                        indicatorClasses = "bg-amber-100 dark:bg-amber-900/30 text-amber-600";
+                        indicatorBorder = "border-amber-200 dark:border-amber-800";
                       }
-                    } else if (isCorrect && !isExamMode) {
+                    } else if (isCorrect && (!isExamMode || examCompleted)) {
                       // Correct answer (reveal)
                       bgClasses = "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800 border-dashed";
                       textClasses = "text-emerald-700 dark:text-emerald-300 font-medium";
@@ -152,8 +170,8 @@ export default function QuestionCard({
                   return (
                     <button
                       key={i}
-                      disabled={isAnswered}
-                      onClick={() => onAnswer(i)}
+                      disabled={!isExamMode && isAnswered}
+                      onClick={() => onAnswer(question.id, i)}
                       className={`${containerClasses} ${bgClasses}`}
                     >
                       <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg mr-4 text-sm font-bold transition-colors ${indicatorClasses} ${indicatorBorder}`}>
@@ -161,7 +179,7 @@ export default function QuestionCard({
                       </div>
                       <span className={`flex-grow ${textClasses}`}>{option}</span>
 
-                      {isAnswered && isSelected && (
+                      {isAnswered && isSelected && (!isExamMode || examCompleted) && (
                         <div className="ml-3 flex-shrink-0">
                           {isCorrect ? <CheckCircle2 className="w-6 h-6 text-emerald-500" /> : <XCircle className="w-6 h-6 text-red-500" />}
                         </div>
