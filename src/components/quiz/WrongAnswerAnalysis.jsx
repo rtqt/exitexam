@@ -1,16 +1,18 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XCircle, CheckCircle2, AlertTriangle, BookOpen, Layers } from 'lucide-react';
+import { XCircle, CheckCircle2, AlertTriangle, BookOpen, Layers, Flag } from 'lucide-react';
 
-export default function WrongAnswerAnalysis({ questions, userAnswers }) {
-    // Compute wrong answers and theme statistics
-    const { wrongQuestions, themeStats } = useMemo(() => {
+export default function WrongAnswerAnalysis({ questions, userAnswers, flagged }) {
+    // Compute wrong answers, flagged answers, and theme statistics
+    const { wrongQuestions, flaggedQuestions, themeStats } = useMemo(() => {
         const wrong = [];
+        const flaggedList = [];
         const stats = {};
 
         questions.forEach((q, idx) => {
             const userAnswer = userAnswers && userAnswers[q.id];
             const isCorrect = userAnswer === q.answer;
+            const isFlagged = flagged && flagged[q.id];
 
             // Initialize theme stats if not exists
             if (!stats[q.theme]) {
@@ -29,6 +31,15 @@ export default function WrongAnswerAnalysis({ questions, userAnswers }) {
                     questionIdx: idx
                 });
             }
+
+            if (isFlagged) {
+                flaggedList.push({
+                    question: q,
+                    userAnswerIdx: userAnswer,
+                    questionIdx: idx,
+                    isCorrect
+                });
+            }
         });
 
         // Format theme stats for display
@@ -44,11 +55,11 @@ export default function WrongAnswerAnalysis({ questions, userAnswers }) {
             };
         }).sort((a, b) => a.percentage - b.percentage); // Sort by weakest first
 
-        return { wrongQuestions: wrong, themeStats: formattedStats };
-    }, [questions, userAnswers]);
+        return { wrongQuestions: wrong, flaggedQuestions: flaggedList, themeStats: formattedStats };
+    }, [questions, userAnswers, flagged]);
 
-    if (wrongQuestions.length === 0) {
-        return null; // Nothing to analyze if score is 100%
+    if (wrongQuestions.length === 0 && flaggedQuestions.length === 0) {
+        return null; // Nothing to analyze if score is 100% and no flags
     }
 
     return (
@@ -103,18 +114,19 @@ export default function WrongAnswerAnalysis({ questions, userAnswers }) {
                 ))}
             </div>
 
-            {/* Wrong Questions Section */}
-            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-amber-500" />
-                Review Incorrect Answers ({wrongQuestions.length})
-            </h3>
+            {wrongQuestions.length > 0 && (
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2 mt-8">
+                    <BookOpen className="w-5 h-5 text-amber-500" />
+                    Review Incorrect Answers ({wrongQuestions.length})
+                </h3>
+            )}
             <div className="space-y-6">
                 {wrongQuestions.map((item, idx) => {
                     const { question, userAnswerIdx, questionIdx } = item;
                     const hasAnswered = userAnswerIdx !== undefined && userAnswerIdx !== null;
 
                     return (
-                        <div key={idx} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <div key={idx} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mb-6">
                             <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
                                 <div className="flex items-start justify-between gap-4 mb-3">
                                     <span className="flex-shrink-0 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-xs font-bold px-2 py-1 rounded-md">
@@ -155,7 +167,79 @@ export default function WrongAnswerAnalysis({ questions, userAnswers }) {
                         </div>
                     );
                 })}
+
+                {flaggedQuestions.length > 0 && (
+                    <>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4 mt-10 flex items-center gap-2">
+                            <Flag className="w-5 h-5 text-amber-500" />
+                            Review Flagged Questions ({flaggedQuestions.length})
+                        </h3>
+                        {flaggedQuestions.map((item, idx) => {
+                            const { question, userAnswerIdx, questionIdx, isCorrect } = item;
+                            const hasAnswered = userAnswerIdx !== undefined && userAnswerIdx !== null;
+
+                            return (
+                                <div key={`flagged-${idx}`} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mb-6">
+                                    <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+                                        <div className="flex items-start justify-between gap-4 mb-3">
+                                            <div className="flex gap-2">
+                                                <span className="flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold px-2 py-1 rounded-md">
+                                                    Q{questionIdx + 1}
+                                                </span>
+                                                {isCorrect ? (
+                                                    <span className="flex-shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-2 py-1 rounded-md">
+                                                        Correct
+                                                    </span>
+                                                ) : hasAnswered ? (
+                                                    <span className="flex-shrink-0 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs font-bold px-2 py-1 rounded-md">
+                                                        Incorrect
+                                                    </span>
+                                                ) : (
+                                                    <span className="flex-shrink-0 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-xs font-bold px-2 py-1 rounded-md">
+                                                        Skipped
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
+                                                {question.theme}
+                                            </span>
+                                        </div>
+                                        <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                                            {question.question}
+                                        </h4>
+                                    </div>
+
+                                    <div className="p-5 space-y-3">
+                                        {/* User's answer */}
+                                        <div className={`flex items-start gap-3 p-3 rounded-xl border ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-900/30' : hasAnswered ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 border-dashed'}`}>
+                                            {isCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" /> : hasAnswered ? <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" /> : <AlertTriangle className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />}
+                                            <div>
+                                                <span className={`text-xs font-bold uppercase tracking-wider mb-1 block ${isCorrect ? 'text-emerald-600 dark:text-emerald-400' : hasAnswered ? 'text-red-500' : 'text-slate-500'}`}>Your Answer</span>
+                                                <p className={`font-medium text-sm md:text-base ${isCorrect ? 'text-emerald-900 dark:text-emerald-200' : hasAnswered ? 'text-red-900 dark:text-red-200' : 'text-slate-500'}`}>
+                                                    {hasAnswered ? question.options[userAnswerIdx] : <span className="italic">Skipped / Unanswered</span>}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* The correct answer */}
+                                        {!isCorrect && (
+                                            <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/30">
+                                                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                                <div>
+                                                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1 block">Correct Answer</span>
+                                                    <p className="text-emerald-900 dark:text-emerald-200 font-bold text-sm md:text-base">
+                                                        {question.options[question.answer]}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </>
+                )}
             </div>
-        </motion.div>
+        </motion.div >
     );
 }

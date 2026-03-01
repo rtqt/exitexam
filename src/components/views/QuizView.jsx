@@ -63,8 +63,8 @@ export default function QuizView({
         userAnswers={userAnswers}
         timeLeft={timeLeft}
         isExamMode={isExamMode}
-          flagged={flagged}
-          onToggleFlag={onToggleFlag}
+        flagged={flagged}
+        onToggleFlag={onToggleFlag}
         onJump={onJump}
         formatTime={formatTime}
       />
@@ -118,7 +118,7 @@ export default function QuizView({
 
           {isLastQuestion ? (
             <button
-              disabled={!currentQuestion || userAnswers[currentQuestion.id] === undefined}
+              disabled={!currentQuestion || (!isExamMode && userAnswers[currentQuestion.id] === undefined)}
               onClick={onFinish}
               className="flex items-center gap-2 bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 shadow-xl shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95"
             >
@@ -127,7 +127,7 @@ export default function QuizView({
             </button>
           ) : (
             <button
-              disabled={!currentQuestion || userAnswers[currentQuestion.id] === undefined}
+              disabled={!currentQuestion || (!isExamMode && userAnswers[currentQuestion.id] === undefined)}
               onClick={onNext}
               className="flex items-center gap-2 bg-amber-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-amber-600 shadow-xl shadow-amber-500/30 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95"
             >
