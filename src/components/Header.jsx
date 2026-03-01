@@ -1,7 +1,7 @@
 import React from 'react';
-import { Sun, Moon, Shield, BookOpen, GraduationCap } from 'lucide-react';
+import { Sun, Moon, Shield, GraduationCap, Bot } from 'lucide-react';
 
-export default function Header({ darkMode, setDarkMode, onAdminClick, goHome }) {
+export default function Header({ darkMode, setDarkMode, onAdminClick, goHome, onSettingsClick }) {
     const [mobileOpen, setMobileOpen] = React.useState(false);
 
     const toggleMobile = () => setMobileOpen(prev => !prev);
@@ -67,6 +67,15 @@ export default function Header({ darkMode, setDarkMode, onAdminClick, goHome }) 
                             <span className="hidden sm:inline">Admin Panel</span>
                         </button>
 
+                        {/* AI Settings Link */}
+                        <button
+                            onClick={onSettingsClick}
+                            className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:bg-slate-800/50 transition-all active:scale-95"
+                            title="AI Tutor Settings"
+                        >
+                            <Bot className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                        </button>
+
                     </div>
                 </div>
 
@@ -91,6 +100,13 @@ export default function Header({ darkMode, setDarkMode, onAdminClick, goHome }) 
                             >
                                 <Shield className="w-4 h-4 text-amber-500" />
                                 <span>Admin Panel</span>
+                            </button>
+                            <button
+                                onClick={() => { onSettingsClick(); closeMobile(); }}
+                                className="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-stone-700 dark:text-amber-100 bg-white/50 dark:bg-stone-800/50 hover:bg-amber-50 dark:hover:bg-amber-900/20 border border-amber-200/60 dark:border-stone-700 rounded-xl transition-all hover:border-amber-400 dark:hover:border-amber-700 active:scale-95"
+                            >
+                                <Bot className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                                <span>AI Tutor Settings</span>
                             </button>
                         </div>
                     </div>

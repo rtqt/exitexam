@@ -225,6 +225,7 @@ function ExamApp() {
           setDarkMode={setDarkMode}
           onAdminClick={() => setView('admin')}
           goHome={() => setView('home')}
+          onSettingsClick={() => setShowApiKeyModal(true)}
         />
       )}
 
